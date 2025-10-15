@@ -1,0 +1,21 @@
+{
+  "name": "diet-recipe-generator",
+  "version": "1.0.0",
+  "description": "A simple FastAPI app that generates diet-specific recipes using GPT-4",
+  "scripts": {
+    "dev": "uvicorn main:app --reload",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "fastapi",
+    "openai",
+    "gpt-4",
+    "recipe",
+    "diet",
+    "vegetarian",
+    "vegan"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

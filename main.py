@@ -2,7 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-import openai
+from openai import OpenAI
+import httpx
 import os
 from typing import Literal
 
@@ -27,9 +28,6 @@ async def get_recipe(request: RecipeRequest):
     if not request.api_key:
         raise HTTPException(status_code=400, detail="OpenAI API key is required")
     
-    # Set the API key for this request
-    openai.api_key = request.api_key
-    
     # Create prompt based on diet type
     prompt = f"""Generate a simple and delicious {request.diet_type} dinner recipe. 
     Include:
@@ -40,24 +38,30 @@ async def get_recipe(request: RecipeRequest):
     
     Keep it simple and practical for home cooking."""
     
+    # Use context manager to properly handle httpx client lifecycle
     try:
-        # Call OpenAI API
-        response = openai.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful chef assistant that provides simple, practical recipes."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=800,
-            temperature=0.7
-        )
-        
-        recipe = response.choices[0].message.content
-        
-        return RecipeResponse(
-            recipe=recipe,
-            diet_type=request.diet_type
-        )
+        with httpx.Client(timeout=60.0) as http_client:
+            # Create OpenAI client with the provided API key and custom httpx client
+            # This avoids proxy-related issues in serverless environments
+            client = OpenAI(api_key=request.api_key, http_client=http_client)
+            
+            # Call OpenAI API
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are a helpful chef assistant that provides simple, practical recipes."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=800,
+                temperature=0.7
+            )
+            
+            recipe = response.choices[0].message.content
+            
+            return RecipeResponse(
+                recipe=recipe,
+                diet_type=request.diet_type
+            )
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating recipe: {str(e)}")

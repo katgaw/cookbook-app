@@ -88,6 +88,19 @@ Your API key is sent directly to OpenAI and is not stored by this application. E
 - **Rate Limiting**: If you get rate limit errors, wait a moment before trying again
 - **Connection Issues**: Ensure you have an active internet connection
 
+## Deployment
+
+Want to deploy this app to the cloud? See [DEPLOYMENT.md](DEPLOYMENT.md) for complete instructions on deploying to Vercel.
+
+Quick deploy:
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy
+vercel
+```
+
 ## License
 
 MIT License - Feel free to modify and use as needed!
